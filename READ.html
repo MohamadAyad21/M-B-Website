@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Recovery Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0a0a0f;--bg2:#12121a;--card:#1a1a2e;--card2:#16213e;
+--pri:#7c3aed;--pri-l:#a78bfa;--pri-g:rgba(124,58,237,.25);
+--acc:#10b981;--acc-g:rgba(16,185,129,.2);
+--dan:#ef4444;--dan-g:rgba(239,68,68,.15);
+--warn:#f59e0b;
+--t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;
+--brd:rgba(255,255,255,.06);--brd2:rgba(255,255,255,.1);
+--r:16px;--rs:10px;--rx:8px;
+}
+html{font-size:16px}
+body{font-family:'Inter','Tajawal',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit;border:none;outline:none;-webkit-tap-highlight-color:transparent}
+input,textarea,select{font-family:inherit;outline:none;border:none;-webkit-tap-highlight-color:transparent}
+.app{max-width:480px;margin:0 auto;position:relative;padding-bottom:90px;min-height:100vh}
+
+/* NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:456px;background:rgba(26,26,46,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--brd2);border-radius:28px;display:flex;justify-content:space-around;align-items:center;padding:6px 4px;margin-bottom:10px;z-index:100;box-shadow:0 -4px 30px rgba(0,0,0,.5)}
+.ni{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px;border-radius:20px;background:transparent;color:var(--t3);font-size:9px;font-weight:500;transition:all .3s;min-width:48px}
+.ni.act{color:var(--pri-l);background:rgba(124,58,237,.12)}
+.ni svg{width:20px;height:20px;stroke:currentColor;stroke-width:1.8;fill:none;transition:all .3s}
+.ni:active{transform:scale(.88)}
+
+/* PAGES */
+.pg{display:none;padding:16px;opacity:0;transform:translateY(10px)}
+.pg.act{display:block;animation:pgIn .35s ease forwards}
+@keyframes pgIn{to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes slR{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes breathe{0%,100%{box-shadow:0 0 15px var(--pri-g)}50%{box-shadow:0 0 30px var(--pri-g)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px var(--pri-g))}50%{filter:drop-shadow(0 0 20px var(--pri-g))}}
+@keyframes confFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes bounceIn{0%{transform:scale(.3);opacity:0}50%{transform:scale(1.05)}70%{transform:scale(.95)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-3px)}40%,80%{transform:translateX(3px)}}
+@keyframes ripple{0%{transform:scale(1);opacity:.4}100%{transform:scale(2.5);opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* LANG */
+.lang-btn{position:fixed;top:12px;left:12px;z-index:150;padding:6px 12px;border-radius:20px;background:var(--card);border:1px solid var(--brd2);color:var(--t2);font-size:11px;font-weight:600;backdrop-filter:blur(10px)}
+[dir="ltr"] .lang-btn{left:auto;right:12px}
+
+/* RESCUE BTN */
+.rescue-float{position:fixed;top:12px;right:12px;z-index:150;padding:8px 16px;border-radius:24px;background:linear-gradient(135deg,#f59e0b,#ef4444,#ec4899);color:#fff;font-size:12px;font-weight:700;box-shadow:0 4px 20px rgba(245,158,11,.4);animation:pulse 2s infinite;display:flex;align-items:center;gap:6px}
+[dir="ltr"] .rescue-float{right:auto;left:12px}
+.rescue-float:active{transform:scale(.92)}
+.rescue-float svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2}
+
+/* PROFILE */
+.prof-sel{display:flex;gap:8px;margin-bottom:12px;margin-top:40px;animation:fadeUp .5s ease both}
+.prof-b{flex:1;padding:12px;border-radius:var(--rs);background:var(--card);border:2px solid transparent;color:var(--t2);font-size:14px;font-weight:600;transition:all .3s;text-align:center}
+.prof-b.act{border-color:var(--pri);color:var(--t1);background:rgba(124,58,237,.1);box-shadow:0 0 20px var(--pri-g)}
+.prof-b:active{transform:scale(.95)}
+
+/* HABIT INFO */
+.habit-name{text-align:center;font-size:20px;font-weight:700;color:var(--pri-l);margin-bottom:4px;animation:fadeUp .5s ease .1s both}
+.habit-desc{text-align:center;font-size:12px;color:var(--t2);margin-bottom:16px;min-height:18px;cursor:pointer;padding:4px 8px;border-radius:var(--rx);transition:background .2s;animation:fadeUp .5s ease .15s both}
+.habit-desc:hover{background:rgba(255,255,255,.03)}
+
+/* TIMER */
+.timer-sec{text-align:center;padding:8px 0 16px;animation:scIn .6s ease .2s both}
+.timer-ring{width:210px;height:210px;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center}
+.timer-ring svg{position:absolute;top:0;left:0;width:100%;height:100%;transform:rotate(-90deg);animation:glow 4s infinite}
+.timer-ring .rbg{stroke:rgba(255,255,255,.05);stroke-width:6;fill:none}
+.timer-ring .rprog{stroke:url(#grad1);stroke-width:6;fill:none;stroke-linecap:round;transition:stroke-dashoffset .8s;filter:drop-shadow(0 0 10px var(--pri-g))}
+.tinner{text-align:center;z-index:1;animation:float 4s infinite}
+.tdays{font-size:48px;font-weight:800;line-height:1;letter-spacing:-2px}
+.tdays-l{font-size:12px;color:var(--t2);margin-top:2px}
+.tdetail{font-size:13px;color:var(--t3);margin-top:4px;direction:ltr;font-variant-numeric:tabular-nums}
+.tstart{font-size:11px;color:var(--t3);margin-top:8px}
+
+/* REWARD/PUNISHMENT DISPLAY */
+.rp-display{margin:12px 0;animation:fadeUp .5s ease .3s both}
+.rp-card{padding:12px;border-radius:var(--rs);margin-bottom:8px;font-size:12px;line-height:1.6}
+.rp-card.reward-d{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);color:var(--acc)}
+.rp-card.punish-d{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);color:var(--dan)}
+.rp-card.next-d{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);color:var(--pri-l)}
+.rp-card .rp-label{font-weight:700;margin-bottom:2px;font-size:11px;opacity:.8}
+.rp-card .rp-text{font-size:13px}
+
+/* MILESTONES */
+.ms-wrap{position:relative;animation:fadeUp .5s ease .3s both;margin-bottom:12px}
+.ms-row{display:flex;gap:6px;overflow-x:auto;padding:8px 28px;scrollbar-width:none;scroll-behavior:smooth}
+.ms-row::-webkit-scrollbar{display:none}
+.ms-arr{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--card);border:1px solid var(--brd2);color:var(--t2);display:flex;align-items:center;justify-content:center;z-index:3;font-size:14px;transition:all .3s}
+.ms-arr:active{transform:translateY(-50%) scale(.85)}
+.ms-arr.arr-l{left:0}
+.ms-arr.arr-r{right:0}
+[dir="ltr"] .ms-arr.arr-l{left:0;right:auto}
+[dir="ltr"] .ms-arr.arr-r{right:0;left:auto}
+.ms-chip{flex-shrink:0;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--card);color:var(--t3);border:1px solid var(--brd);transition:all .3s;white-space:nowrap;cursor:pointer}
+.ms-chip:active{transform:scale(.88)}
+.ms-chip.ach{background:rgba(16,185,129,.12);color:var(--acc);border-color:rgba(16,185,129,.3)}
+.ms-chip.cur{background:rgba(124,58,237,.12);color:var(--pri-l);border-color:rgba(124,58,237,.3);animation:breathe 2.5s infinite}
+.ms-chip.fut{opacity:.5}
+.ms-chip .rdot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--warn);margin-inline-start:4px;vertical-align:middle}
+
+/* PLEDGE */
+.pledge-card{background:linear-gradient(135deg,rgba(124,58,237,.1),rgba(99,102,241,.05));border:1px solid rgba(124,58,237,.2);border-radius:var(--r);padding:14px;margin-bottom:12px;animation:fadeUp .5s ease .35s both;text-align:center}
+.pledge-card h4{font-size:14px;font-weight:600;color:var(--pri-l);margin-bottom:8px}
+.pledge-btn{padding:10px 24px;border-radius:24px;background:linear-gradient(135deg,var(--pri),#6d28d9);color:#fff;font-size:13px;font-weight:600;box-shadow:0 4px 15px var(--pri-g);transition:all .3s}
+.pledge-btn:active{transform:scale(.94)}
+.pledge-done{color:var(--acc);font-size:13px;font-weight:600}
+.pledge-done svg{width:18px;height:18px;vertical-align:middle;stroke:var(--acc);fill:none;margin-inline-end:4px}
+
+/* CHECKIN */
+.ci-btns{display:flex;gap:10px;margin:12px 0;animation:fadeUp .5s ease .4s both}
+.ci-btn{flex:1;padding:16px 12px;border-radius:var(--r);font-size:13px;font-weight:700;text-align:center;transition:all .3s;position:relative;overflow:hidden}
+.ci-btn:active{transform:scale(.92)}
+.ci-ok{background:rgba(16,185,129,.08);color:var(--acc);border:2px solid rgba(16,185,129,.25)}
+.ci-bad{background:rgba(239,68,68,.06);color:var(--dan);border:2px solid rgba(239,68,68,.15)}
+.ci-btn .rpl{position:absolute;border-radius:50%;background:rgba(255,255,255,.15);animation:ripple .6s linear}
+
+/* HOME GALLERY */
+.hgal{margin-top:14px;animation:fadeUp .5s ease .5s both}
+.hgal-t{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.hgal-sc{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.hgal-sc::-webkit-scrollbar{display:none}
+.hgal-c{flex-shrink:0;width:110px;height:110px;border-radius:var(--rs);overflow:hidden;position:relative;border:1px solid var(--brd)}
+.hgal-c img{width:100%;height:100%;object-fit:cover}
+.hgal-c .hgd{position:absolute;bottom:0;left:0;right:0;padding:5px;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:9px}
+.hgal-c .hgrm{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;opacity:.7}
+.hgal-add{flex-shrink:0;width:110px;height:110px;border-radius:var(--rs);border:2px dashed var(--brd2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--t3);font-size:10px;background:transparent;transition:all .3s}
+.hgal-add:hover{border-color:var(--pri);color:var(--pri-l)}
+.hgal-add svg{width:18px;height:18px}
+
+/* RESET BTN */
+.rst-btn{margin-top:10px;width:100%;padding:12px;border-radius:var(--rs);background:rgba(239,68,68,.06);color:var(--dan);font-size:12px;font-weight:600;border:1px solid rgba(239,68,68,.15);transition:all .3s;animation:fadeUp .5s ease .6s both}
+.rst-btn:active{transform:scale(.96)}
+
+/* MODALS */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-ov.show{display:flex}
+.mdl{background:var(--card);border-radius:20px;padding:28px 22px;max-width:360px;width:100%;text-align:center;animation:bounceIn .5s;border:1px solid var(--brd2)}
+.mdl h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.mdl .mquote{font-size:13px;color:var(--t2);line-height:1.7;font-style:italic;margin:8px 0}
+.mdl .mreward{font-size:13px;color:var(--warn);margin:8px 0;padding:8px;background:rgba(245,158,11,.06);border-radius:var(--rx);display:none}
+.mdl .mbtn{padding:10px 32px;border-radius:24px;background:linear-gradient(135deg,var(--pri),#6d28d9);color:#fff;font-size:13px;font-weight:600;margin-top:8px;box-shadow:0 4px 15px var(--pri-g)}
+.mdl .mbtn:active{transform:scale(.94)}
+.mdl-icon{width:64px;height:64px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;animation:scIn .4s ease .15s both}
+.mdl-icon.ic-ok{background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.05))}
+.mdl-icon.ic-cur{background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(124,58,237,.05))}
+.mdl-icon.ic-lock{background:rgba(255,255,255,.04)}
+
+/* MS STATUS */
+.ms-st{font-size:11px;padding:4px 14px;border-radius:20px;display:inline-block;margin-bottom:8px;font-weight:600}
+.ms-st.st-ok{background:rgba(16,185,129,.12);color:var(--acc)}
+.ms-st.st-cur{background:rgba(124,58,237,.12);color:var(--pri-l)}
+.ms-st.st-lock{background:rgba(255,255,255,.05);color:var(--t3)}
+.ms-time{font-size:12px;color:var(--t2);margin:8px 0;padding:8px;background:rgba(124,58,237,.06);border-radius:var(--rx)}
+.ms-time strong{color:var(--pri-l)}
+
+/* RESCUE MODAL */
+.rescue-ov{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:16px}
+.rescue-ov.show{display:flex}
+.rescue-card{width:100%;max-width:400px;height:70vh;border-radius:24px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;overflow:hidden}
+.rescue-card .rc-bg{position:absolute;inset:0;z-index:0}
+.rescue-card .rc-content{position:relative;z-index:1}
+.rescue-card .rc-emoji{font-size:48px;margin-bottom:16px;animation:bounceIn .6s ease}
+.rescue-card .rc-text{font-size:20px;font-weight:700;color:#fff;line-height:1.6;text-shadow:0 2px 10px rgba(0,0,0,.3);margin-bottom:12px}
+.rescue-card .rc-sub{font-size:14px;color:rgba(255,255,255,.8);line-height:1.5}
+.rescue-nav{position:absolute;bottom:24px;display:flex;gap:12px;z-index:2}
+.rescue-nav button{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2)}
+.rescue-nav button:active{transform:scale(.85)}
+.rescue-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;z-index:2;backdrop-filter:blur(10px)}
+.rescue-counter{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,.6);z-index:2}
+
+/* PLEDGE MODAL */
+.pledge-m{max-width:340px}
+.pledge-m textarea{width:100%;padding:10px;border-radius:var(--rx);background:var(--bg2);color:var(--t1);font-size:13px;border:1px solid var(--brd);resize:none;height:70px;margin:8px 0}
+.pledge-m .sug-reasons{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.pledge-m .sug-r{padding:6px 12px;border-radius:20px;background:rgba(124,58,237,.08);color:var(--pri-l);font-size:11px;border:1px solid rgba(124,58,237,.15);transition:all .3s}
+.pledge-m .sug-r:active{transform:scale(.92)}
+.pledge-m .sug-r.sel{background:rgba(124,58,237,.2);border-color:var(--pri)}
+
+/* JOURNAL */
+.jentry{padding:14px;background:var(--bg2);border-radius:var(--rs);margin-bottom:10px;border-right:3px solid var(--pri);transition:all .3s;animation:slR .4s ease both}
+[dir="ltr"] .jentry{border-right:none;border-left:3px solid var(--pri)}
+.jmeta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;color:var(--t3)}
+.jtext{font-size:13px;line-height:1.6}
+.jphotos{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.jphotos::-webkit-scrollbar{display:none}
+.jphotos img{width:60px;height:60px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.jactions{display:flex;gap:6px;margin-top:8px}
+.jactions button{padding:6px 12px;font-size:11px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--t3);transition:all .3s;min-height:30px}
+.jactions .jdel{color:var(--dan);background:rgba(239,68,68,.08)}
+
+/* CHAT */
+.chat-day{margin-bottom:16px;animation:fadeUp .4s ease both}
+.chat-date{font-size:11px;color:var(--t3);text-align:center;margin-bottom:8px;font-weight:600}
+.chat-q{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15);padding:12px;border-radius:var(--r) var(--r) var(--rx) var(--r);margin-bottom:6px;font-size:13px}
+.chat-a{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);padding:12px;border-radius:var(--r) var(--r) var(--r) var(--rx);margin-bottom:6px;font-size:13px;margin-inline-start:20px}
+.chat-reply{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.12);padding:12px;border-radius:var(--r) var(--r) var(--rx) var(--r);font-size:13px;margin-inline-end:20px}
+.chat-sender{font-size:10px;color:var(--t3);margin-bottom:4px;font-weight:600}
+.chat-input-area{background:var(--card);border-radius:var(--r);padding:12px;border:1px solid var(--brd);margin-bottom:12px}
+.chat-input-area textarea{width:100%;padding:8px;border-radius:var(--rx);background:var(--bg2);color:var(--t1);font-size:13px;border:1px solid var(--brd);resize:none;height:50px;margin-bottom:8px}
+.chat-input-area .ci-send{padding:8px 20px;border-radius:20px;background:linear-gradient(135deg,var(--pri),#6d28d9);color:#fff;font-size:12px;font-weight:600}
+
+/* GALLERY PAGE */
+.galgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.galcard{border-radius:var(--rs);overflow:hidden;position:relative;aspect-ratio:1;background:var(--card);border:1px solid var(--brd);animation:scIn .4s ease both}
+.galcard img{width:100%;height:100%;object-fit:cover}
+.galcard .galdesc{position:absolute;bottom:0;left:0;right:0;padding:8px;background:linear-gradient(transparent,rgba(0,0,0,.85));font-size:11px}
+.galcard .galrm{position:absolute;top:6px;left:6px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;opacity:.7}
+.galadd{aspect-ratio:1;border-radius:var(--rs);border:2px dashed var(--brd2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--t3);font-size:12px;background:transparent;transition:all .3s}
+.galadd:hover{border-color:var(--pri);color:var(--pri-l)}
+.galadd svg{width:24px;height:24px}
+.gal-sug{margin-bottom:16px}
+.gal-sug-t{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.gal-sug-scroll{display:flex;gap:8px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.gal-sug-scroll::-webkit-scrollbar{display:none}
+.gal-sug-card{flex-shrink:0;width:130px;height:130px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;cursor:pointer;transition:all .3s}
+.gal-sug-card:active{transform:scale(.92)}
+.gal-sug-card span{font-size:11px;font-weight:600;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.4);line-height:1.4}
+
+/* SETTINGS */
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--brd)}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-t{font-size:15px;font-weight:600}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;color:var(--t2);margin-bottom:6px;font-weight:500}
+.fi{width:100%;padding:12px 14px;border-radius:var(--rx);background:var(--bg2);color:var(--t1);font-size:14px;border:1px solid var(--brd);transition:all .3s}
+.fi:focus{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri-g)}
+textarea.fi{resize:vertical;min-height:80px;line-height:1.6}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 24px;border-radius:var(--rs);font-size:14px;font-weight:600;transition:all .3s}
+.btn:active{transform:scale(.94)}
+.btn-p{background:linear-gradient(135deg,var(--pri),#6d28d9);color:#fff;box-shadow:0 4px 15px var(--pri-g)}
+.btn-g{background:transparent;color:var(--t2);border:1px solid var(--brd2)}
+.btn-s{padding:8px 16px;font-size:12px}
+.btn-d{background:rgba(239,68,68,.08);color:var(--dan)}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--brd);animation:slR .4s ease both}
+.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.tl-dot.tl-ok{background:var(--acc);box-shadow:0 0 8px var(--acc-g)}
+.tl-dot.tl-bad{background:var(--dan);box-shadow:0 0 8px var(--dan-g)}
+.tl-date{font-size:11px;color:var(--t3)}
+.tl-text{font-size:13px;margin-top:2px}
+
+/* STATS */
+.stg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stc{background:var(--bg2);border-radius:var(--rs);padding:14px;text-align:center;animation:scIn .4s ease both}
+.stv{font-size:24px;font-weight:700;color:var(--pri-l)}
+.stl{font-size:11px;color:var(--t3);margin-top:4px}
+
+/* REWARD CONFIG */
+.rw-cfg{margin-bottom:12px}
+.rw-toggle{display:flex;gap:6px;margin-bottom:10px}
+.rw-tb{flex:1;padding:8px;border-radius:20px;font-size:11px;font-weight:600;text-align:center;border:1px solid var(--brd);color:var(--t3);background:transparent;transition:all .3s}
+.rw-tb.act{background:rgba(124,58,237,.12);color:var(--pri-l);border-color:var(--pri)}
+
+/* CONFETTI */
+.confetti{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:250;overflow:hidden}
+.confetti span{position:absolute;width:8px;height:8px;top:-10px;border-radius:2px;animation:confFall 3s linear forwards}
+
+/* PAGE HEADER */
+.pg-h{font-size:20px;font-weight:700;margin-bottom:16px;padding-top:36px}
+.empty{text-align:center;padding:40px 16px;color:var(--t3)}
+.empty svg{width:48px;height:48px;stroke:currentColor;stroke-width:1.2;fill:none;margin-bottom:12px}
+.empty p{font-size:14px;line-height:1.6}
+.desc-edit{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.desc-edit input{flex:1;min-width:120px}
+
+/* TABS for reward/punish config */
+.cfg-tabs{display:flex;gap:6px;margin-bottom:10px}
+.cfg-tab{flex:1;padding:8px;border-radius:20px;font-size:11px;font-weight:600;text-align:center;border:1px solid var(--brd);color:var(--t3);background:transparent;transition:all .3s}
+.cfg-tab.act{background:rgba(124,58,237,.12);color:var(--pri-l);border-color:var(--pri)}
+
+/* WHATSAPP */
+.wa-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.wa-row input{flex:1}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- Lang -->
+<button class="lang-btn" id="lang-btn" onclick="toggleLang()">EN</button>
+
+<!-- Rescue Float -->
+<button class="rescue-float" onclick="openRescue()">
+<svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+<span data-t="rescue">إنقاذ</span>
+</button>
+
+<!-- ===== HOME ===== -->
+<div class="pg act" id="pg-home">
+<div class="prof-sel">
+<button class="prof-b act" onclick="switchProf(0)" id="pb0">الشخص 1</button>
+<button class="prof-b" onclick="switchProf(1)" id="pb1">الشخص 2</button>
+</div>
+
+<div class="habit-name" id="habit-name"></div>
+<div class="habit-desc" id="habit-desc" onclick="editDesc()"></div>
+<div class="desc-edit" id="desc-edit" style="display:none">
+<input type="text" class="fi" id="desc-inp" style="font-size:13px;padding:8px 12px">
+<button class="btn btn-p btn-s" onclick="saveDesc()" data-t="save">حفظ</button>
+<button class="btn btn-g btn-s" onclick="cancelDesc()" data-t="cancel">إلغاء</button>
+</div>
+
+<div class="timer-sec">
+<div class="timer-ring">
+<svg viewBox="0 0 240 240">
+<defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#7c3aed"/><stop offset="100%" style="stop-color:#a78bfa"/></linearGradient></defs>
+<circle class="rbg" cx="120" cy="120" r="108"/>
+<circle class="rprog" id="rprog" cx="120" cy="120" r="108" stroke-dasharray="678.58" stroke-dashoffset="678.58"/>
+</svg>
+<div class="tinner">
+<div class="tdays" id="tdays">0</div>
+<div class="tdays-l" data-t="day">يوم</div>
+<div class="tdetail" id="tdetail">00:00:00</div>
+</div>
+</div>
+<div class="tstart" id="tstart"></div>
+</div>
+
+<!-- Reward/Punishment Display -->
+<div class="rp-display" id="rp-display"></div>
+
+<!-- Milestones -->
+<div class="ms-wrap">
+<button class="ms-arr arr-l" onclick="scrollMs(-1)">&#8250;</button>
+<div class="ms-row" id="ms-row"></div>
+<button class="ms-arr arr-r" onclick="scrollMs(1)">&#8249;</button>
+</div>
+
+<!-- Pledge -->
+<div class="pledge-card" id="pledge-area"></div>
+
+<!-- Check-in -->
+<div class="ci-btns">
+<button class="ci-btn ci-ok" onclick="doCheckin('success')">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg><br><span data-t="im_fine">أنا بخير</span>
+</button>
+<button class="ci-btn ci-bad" onclick="doCheckin('relapse')">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><br><span data-t="relapse">انتكاسة</span>
+</button>
+</div>
+
+<button class="rst-btn" onclick="resetStreak()" data-t="reset_counter">إعادة تعيين العداد</button>
+
+<!-- Home Gallery -->
+<div class="hgal" id="hgal-sec">
+<div class="hgal-t">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--pri-l)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+<span data-t="motivational_images">صور تحفيزية</span>
+</div>
+<div class="hgal-sc" id="hgal-sc"></div>
+</div>
+</div>
+
+<!-- ===== JOURNAL ===== -->
+<div class="pg" id="pg-journal">
+<h2 class="pg-h" data-t="journal">اليوميات</h2>
+<div class="card" style="margin-bottom:14px">
+<textarea class="fi" id="j-inp" rows="3"></textarea>
+<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+<label class="btn btn-g btn-s" style="cursor:pointer">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+<span data-t="add_photos">صور</span>
+<input type="file" accept="image/*" multiple style="display:none" id="j-photos-inp">
+</label>
+<div id="j-photos-preview" style="display:flex;gap:4px;flex:1;overflow-x:auto"></div>
+<button class="btn btn-p btn-s" onclick="saveJournal()" data-t="save">حفظ</button>
+</div>
+</div>
+<div id="j-list"></div>
+<div id="j-empty" class="empty" style="display:none">
+<svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+<p data-t="no_journals">لم تكتب أي يوميات بعد</p>
+</div>
+</div>
+
+<!-- ===== CHAT ===== -->
+<div class="pg" id="pg-chat">
+<h2 class="pg-h" data-t="daily_chat">المحادثة اليومية</h2>
+<div class="chat-input-area" id="chat-input-area"></div>
+<div id="chat-list"></div>
+<div id="chat-empty" class="empty" style="display:none">
+<svg viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+<p data-t="no_chats">لا توجد محادثات بعد</p>
+</div>
+</div>
+
+<!-- ===== GALLERY ===== -->
+<div class="pg" id="pg-gallery">
+<h2 class="pg-h" data-t="motivational_images">صور تحفيزية</h2>
+<!-- Suggested -->
+<div class="gal-sug">
+<div class="gal-sug-t" data-t="suggested_images">صور مقترحة</div>
+<div class="gal-sug-scroll" id="sug-imgs"></div>
+</div>
+<div class="galgrid" id="galgrid"></div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div class="pg" id="pg-settings">
+<h2 class="pg-h" data-t="settings">الإعدادات</h2>
+<div class="card">
+<div class="card-t" style="margin-bottom:12px" data-t="person_settings">إعدادات الشخص</div>
+<div class="fg"><label class="fl" data-t="name">الاسم</label><input type="text" class="fi" id="s-name"></div>
+<div class="fg"><label class="fl" data-t="addiction_type">نوع العادة</label><input type="text" class="fi" id="s-addiction"></div>
+<div class="fg"><label class="fl" data-t="start_date">تاريخ البداية</label><input type="datetime-local" class="fi" id="s-date"></div>
+<div class="fg"><label class="fl" data-t="partner_whatsapp">واتساب الشريك</label><input type="tel" class="fi" id="s-wa" dir="ltr" style="text-align:left" placeholder="9647XXXXXXXXX"></div>
+</div>
+
+<!-- Rewards Config -->
+<div class="card">
+<div class="card-t" style="margin-bottom:12px" data-t="rewards_config">جوائز الإنجازات</div>
+<div class="cfg-tabs">
+<button class="cfg-tab act" onclick="setRwMode('auto',this)" data-t="suggested">مقترحة</button>
+<button class="cfg-tab" onclick="setRwMode('custom',this)" data-t="custom">مخصصة</button>
+</div>
+<div id="rw-list"></div>
+</div>
+
+<!-- Punishments Config -->
+<div class="card">
+<div class="card-t" style="margin-bottom:12px" data-t="punishments_config">العقوبات</div>
+<div class="cfg-tabs">
+<button class="cfg-tab act" onclick="setPnMode('auto',this)" data-t="suggested">مقترحة عشوائية</button>
+<button class="cfg-tab" onclick="setPnMode('custom',this)" data-t="custom">مخصصة</button>
+</div>
+<div id="pn-list"></div>
+</div>
+
+<button class="btn btn-p" onclick="saveSettings()" style="width:100%" data-t="save_settings">حفظ الإعدادات</button>
+
+<!-- Stats -->
+<div class="card" style="margin-top:14px">
+<div class="card-t" style="margin-bottom:12px" data-t="statistics">الإحصائيات</div>
+<div class="stg">
+<div class="stc"><div class="stv" id="st-days">0</div><div class="stl" data-t="recovery_days">أيام التعافي</div></div>
+<div class="stc"><div class="stv" id="st-ci">0</div><div class="stl" data-t="checkins">مرات التسجيل</div></div>
+<div class="stc"><div class="stv" id="st-jn">0</div><div class="stl" data-t="journals_count">يوميات</div></div>
+<div class="stc"><div class="stv" id="st-rl">0</div><div class="stl" data-t="relapses_count">انتكاسات</div></div>
+</div>
+</div>
+
+<!-- Timeline -->
+<div class="card" style="margin-top:14px">
+<div class="card-t" style="margin-bottom:12px" data-t="history">السجل</div>
+<div id="tl-list"></div>
+<div id="tl-empty" class="empty" style="display:none;padding:20px">
+<p data-t="no_history">لا يوجد سجل</p>
+</div>
+</div>
+</div>
+
+<!-- ===== ACHIEVEMENT MODAL ===== -->
+<div class="modal-ov" id="ach-modal">
+<div class="mdl">
+<div class="mdl-icon ic-ok" style="font-size:32px">⭐</div>
+<h3 id="ach-title"></h3>
+<p class="mquote" id="ach-quote"></p>
+<div class="mreward" id="ach-reward"></div>
+<button class="mbtn" onclick="closeAch()" data-t="excellent">ممتاز!</button>
+</div>
+</div>
+
+<!-- ===== MILESTONE DETAIL MODAL ===== -->
+<div class="modal-ov" id="msd-modal">
+<div class="mdl">
+<div class="mdl-icon" id="msd-badge"></div>
+<h3 id="msd-title"></h3>
+<div class="ms-st" id="msd-status"></div>
+<p class="mquote" id="msd-quote"></p>
+<div class="mreward" id="msd-reward"></div>
+<div class="ms-time" id="msd-time" style="display:none"></div>
+<button class="mbtn" onclick="closeMsd()" data-t="close">إغلاق</button>
+</div>
+</div>
+
+<!-- ===== RESCUE MODAL ===== -->
+<div class="rescue-ov" id="rescue-ov">
+<div class="rescue-card" id="rescue-card">
+<div class="rc-bg" id="rc-bg"></div>
+<button class="rescue-close" onclick="closeRescue()">&times;</button>
+<div class="rc-content">
+<div class="rc-emoji" id="rc-emoji"></div>
+<div class="rc-text" id="rc-text"></div>
+<div class="rc-sub" id="rc-sub"></div>
+</div>
+<div class="rescue-nav">
+<button onclick="rescueNav(-1)">&#8249;</button>
+<button onclick="rescueNav(1)">&#8250;</button>
+</div>
+<div class="rescue-counter" id="rc-counter"></div>
+</div>
+</div>
+
+<!-- ===== PLEDGE MODAL ===== -->
+<div class="modal-ov" id="pledge-modal">
+<div class="mdl pledge-m">
+<div class="mdl-icon ic-cur" style="font-size:28px">&#9997;&#65039;</div>
+<h3 data-t="daily_pledge">التعهد اليومي</h3>
+<p style="font-size:13px;color:var(--t2);margin:8px 0" data-t="pledge_text">أتعهد بأنني سأكون منضبطاً اليوم</p>
+<textarea class="fi" id="pledge-reason" style="height:60px;margin:8px 0"></textarea>
+<div class="sug-reasons" id="sug-reasons"></div>
+<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+<button class="mbtn" onclick="confirmPledge()" data-t="pledge_confirm">أتعهد</button>
+<button class="btn btn-g btn-s" onclick="closePledge()" data-t="close">إغلاق</button>
+</div>
+</div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bnav" id="bnav">
+<button class="ni act" onclick="goPage('home',this)">
+<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+<span data-t="home">الرئيسية</span>
+</button>
+<button class="ni" onclick="goPage('journal',this)">
+<svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+<span data-t="journal">اليوميات</span>
+</button>
+<button class="ni" onclick="goPage('chat',this)">
+<svg viewBox="0 0 24 24" stroke-linecap="round" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+<span data-t="chat">المحادثة</span>
+</button>
+<button class="ni" onclick="goPage('gallery',this)">
+<svg viewBox="0 0 24 24" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+<span data-t="photos">صور</span>
+</button>
+<button class="ni" onclick="goPage('settings',this)">
+<svg viewBox="0 0 24 24" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+<span data-t="settings">الإعدادات</span>
+</button>
+</nav>
+</div>
+
+<script>
+/* ========== i18n ========== */
+var currentLang=localStorage.getItem('rlang')||'ar';
+var T={
+ar:{
+home:'الرئيسية',journal:'اليوميات',chat:'المحادثة',photos:'صور',settings:'الإعدادات',
+day:'يوم',days:'أيام',save:'حفظ',cancel:'إلغاء',delete:'حذف',edit:'تعديل',close:'إغلاق',
+im_fine:'أنا بخير',relapse:'انتكاسة',reset_counter:'إعادة تعيين العداد',
+motivational_images:'صور تحفيزية',add_image:'إضافة',add_photos:'صور',
+no_journals:'لم تكتب أي يوميات بعد',no_history:'لا يوجد سجل',no_chats:'لا توجد محادثات بعد',
+person_settings:'إعدادات الشخص',name:'الاسم',addiction_type:'نوع العادة',
+start_date:'تاريخ البداية',partner_whatsapp:'واتساب الشريك',
+save_settings:'حفظ الإعدادات',rewards_config:'جوائز الإنجازات',punishments_config:'العقوبات',
+statistics:'الإحصائيات',recovery_days:'أيام التعافي',checkins:'تسجيلات',journals_count:'يوميات',relapses_count:'انتكاسات',
+excellent:'ممتاز!',rescue:'إنقاذ',
+write_desc:'أكتب وصفك هنا...',desc_placeholder:'انقر لإضافة وصف...',
+addiction_ph:'نوع العادة',start_not_set:'تاريخ البداية: لم يُحدد',
+start_prefix:'البداية: ',ach_prefix:'إنجاز ',day_suffix:' يوم!',
+confirm_reset:'هل أنت متأكد من إعادة تعيين العداد؟',reset_done:'تم إعادة تعيين العداد',
+note_prompt:'أضف ملاحظة (اختياري)',ci_ok:'تم التسجيل! استمر',ci_bad:'لا بأس، ابدأ من جديد!',
+journal_saved:'تم حفظ اليومية',del_journal:'حذف هذه اليومية؟',del_image:'حذف هذه الصورة؟',
+img_desc_prompt:'وصف الصورة (اختياري)',settings_saved:'تم حفظ الإعدادات',
+person:'الشخص',success_day:'يوم ناجح',relapse_event:'انتكاسة',day_of:'اليوم {n} من التعافي',
+write_journal:'اكتب ما تشعر به اليوم...',enter_name:'أدخل اسمك',
+addiction_ex:'مثال: التدخين، السوشال ميديا...',reward_ph:'وصف الجائزة...',
+reward_label:'جائزة يوم {n}',punish_label:'عقوبة يوم {n}',wa_notify:'تم إرسال إشعار واتساب',
+relapse_msg:'إشعار: {name} سجّل انتكاسة. يحتاج دعمك الآن.',no_wa:'لم يتم تعيين رقم واتساب',
+ms_done:'مكتمل',ms_cur:'جاري',ms_lock:'قادم',
+ms_remain:'ستصل خلال <strong>{d} يوم و {h} ساعة</strong>',
+ms_reward_l:'الجائزة:',ms_day:'يوم {n}',ms_done_text:'تم إكمال هذا الإنجاز',
+suggested:'مقترحة',custom:'مخصصة',suggested_images:'صور مقترحة',
+daily_chat:'المحادثة اليومية',how_are_you:'شلونك اليوم؟',send:'إرسال',reply:'رد',
+daily_pledge:'التعهد اليومي',pledge_text:'أتعهد بأنني سأكون منضبطاً اليوم',
+pledge_confirm:'أتعهد',pledge_done:'تم التعهد اليوم',pledge_reason_ph:'اكتب السبب...',
+current_reward:'الجائزة الحالية',next_reward:'الجائزة القادمة',current_punish:'العقوبة الحالية',
+will_get:'ستحصل على هذه الجائزة عند يوم {n}',history:'السجل',
+del_all_images:'حذف كل الصور؟',delete_all:'حذف الكل',
+add_sug_image:'إضافة للمعرض',added:'تمت الإضافة'
+},
+en:{
+home:'Home',journal:'Journal',chat:'Chat',photos:'Photos',settings:'Settings',
+day:'day',days:'days',save:'Save',cancel:'Cancel',delete:'Delete',edit:'Edit',close:'Close',
+im_fine:"I'm fine",relapse:'Relapse',reset_counter:'Reset Counter',
+motivational_images:'Motivational Images',add_image:'Add',add_photos:'Photos',
+no_journals:'No journal entries yet',no_history:'No history yet',no_chats:'No chats yet',
+person_settings:'Person Settings',name:'Name',addiction_type:'Habit Type',
+start_date:'Start Date',partner_whatsapp:'Partner WhatsApp',
+save_settings:'Save Settings',rewards_config:'Milestone Rewards',punishments_config:'Punishments',
+statistics:'Statistics',recovery_days:'Recovery Days',checkins:'Check-ins',journals_count:'Journals',relapses_count:'Relapses',
+excellent:'Excellent!',rescue:'Rescue',
+write_desc:'Write your description...',desc_placeholder:'Click to add description...',
+addiction_ph:'Habit Type',start_not_set:'Start date: Not set',
+start_prefix:'Start: ',ach_prefix:'Achievement ',day_suffix:' days!',
+confirm_reset:'Reset the counter?',reset_done:'Counter reset',
+note_prompt:'Add a note? (optional)',ci_ok:'Checked in! Keep going',ci_bad:"It's okay, start again!",
+journal_saved:'Journal saved',del_journal:'Delete this entry?',del_image:'Delete this image?',
+img_desc_prompt:'Image description (optional)',settings_saved:'Settings saved',
+person:'Person',success_day:'Successful day',relapse_event:'Relapse',day_of:'Day {n} of recovery',
+write_journal:'Write how you feel today...',enter_name:'Enter your name',
+addiction_ex:'e.g. Smoking, Social Media...',reward_ph:'Reward description...',
+reward_label:'Day {n} reward',punish_label:'Day {n} punishment',wa_notify:'WhatsApp notification sent',
+relapse_msg:'Alert: {name} logged a relapse. They need your support now.',no_wa:'Partner WhatsApp not set',
+ms_done:'Completed',ms_cur:'In Progress',ms_lock:'Upcoming',
+ms_remain:"You'll reach it in <strong>{d} days and {h} hours</strong>",
+ms_reward_l:'Reward:',ms_day:'Day {n}',ms_done_text:'This milestone is completed',
+suggested:'Suggested',custom:'Custom',suggested_images:'Suggested Images',
+daily_chat:'Daily Chat',how_are_you:'How are you today?',send:'Send',reply:'Reply',
+daily_pledge:'Daily Pledge',pledge_text:"I pledge to stay disciplined today",
+pledge_confirm:'I Pledge',pledge_done:'Pledged today',pledge_reason_ph:'Write your reason...',
+current_reward:'Current Reward',next_reward:'Next Reward',current_punish:'Current Punishment',
+will_get:"You'll get this reward at day {n}",history:'History',
+del_all_images:'Delete all images?',delete_all:'Delete All',
+add_sug_image:'Add to gallery',added:'Added'
+}
+};
+
+function t(k,v){var s=T[currentLang][k]||T.ar[k]||k;if(v)Object.keys(v).forEach(function(x){s=s.replace('{'+x+'}',v[x])});return s}
+function toggleLang(){currentLang=currentLang==='ar'?'en':'ar';localStorage.setItem('rlang',currentLang);applyLang()}
+function applyLang(){
+var rtl=currentLang==='ar';
+document.documentElement.lang=currentLang;
+document.documentElement.dir=rtl?'rtl':'ltr';
+document.getElementById('lang-btn').textContent=currentLang==='ar'?'EN':'عربي';
+document.querySelectorAll('[data-t]').forEach(function(el){el.textContent=t(el.dataset.t)});
+var ji=document.getElementById('j-inp');if(ji)ji.placeholder=t('write_journal');
+var di=document.getElementById('desc-inp');if(di)di.placeholder=t('write_desc');
+var sn=document.getElementById('s-name');if(sn)sn.placeholder=t('enter_name');
+var sa=document.getElementById('s-addiction');if(sa)sa.placeholder=t('addiction_ex');
+var pr=document.getElementById('pledge-reason');if(pr)pr.placeholder=t('pledge_reason_ph');
+refreshHome();
+}
+
+/* ========== DATA ========== */
+var MS=[1,3,7,10,14,21,30,45,60,75,90];
+var QAR={1:"كل رحلة تبدأ بخطوة واحدة",3:"ثلاثة أيام! جسمك يتعافى",7:"أسبوع كامل! أنت أقوى مما تظن",10:"عشرة أيام! عادات جديدة تتشكل",14:"أسبوعان! نسخة جديدة منك",21:"21 يوم! العادات تتغير",30:"شهر كامل! أنت محارب",45:"45 يوم! التغيير جزء منك",60:"شهران! أنت ملهم",75:"75 يوم! الانضباط طبيعتك",90:"90 يوم! أنت حر"};
+var QEN={1:"Every journey starts with a step",3:"Three days! Your body is healing",7:"A full week! Stronger than you think",10:"Ten days! New habits forming",14:"Two weeks! New version of you",21:"21 days! Habits change now",30:"A full month! True warrior",45:"45 days! Change is part of you",60:"Two months! Inspiring",75:"75 days! Discipline is nature",90:"90 days! You are free"};
+
+var SUGGESTED_REWARDS_AR=["شاهد فيلمك المفضل","اطلب وجبتك المفضلة","اشتري لنفسك هدية صغيرة","خذ حمام دافئ طويل","اتصل بشخص تحبه","استمع لموسيقاك المفضلة","تمشى في الطبيعة","اقرأ كتاب تحبه","العب لعبتك المفضلة","نم ساعة إضافية","اذهب لمقهاك المفضل"];
+var SUGGESTED_REWARDS_EN=["Watch your favorite movie","Order your favorite meal","Buy yourself a small gift","Take a long warm bath","Call someone you love","Listen to your favorite music","Take a nature walk","Read a book you love","Play your favorite game","Sleep an extra hour","Visit your favorite cafe"];
+var SUGGESTED_PUNISH_AR=["20 تمرين ضغط","بدون هاتف لمدة ساعتين","دش بارد","بدون سوشال ميديا ليوم","اكتب 3 أشياء تشكر عليها","نظف غرفتك بالكامل","بدون حلويات اليوم","امشي 2 كيلومتر","اغسل الصحون","بدون يوتيوب اليوم","10 دقائق تأمل"];
+var SUGGESTED_PUNISH_EN=["20 pushups","No phone for 2 hours","Cold shower","No social media for a day","Write 3 things you're grateful for","Clean your entire room","No sweets today","Walk 2 kilometers","Wash the dishes","No YouTube today","10 minutes meditation"];
+var PLEDGE_REASONS_AR=["لأنني أستحق حياة أفضل","لعائلتي ولمن يحبونني","لأنني أقوى من هذا","لصحتي الجسدية والنفسية","لأنني أريد أن أفتخر بنفسي","لمستقبلي وأحلامي","لأنني لن أستسلم","لأن كل يوم يقربني من الحرية"];
+var PLEDGE_REASONS_EN=["Because I deserve a better life","For my family and loved ones","Because I'm stronger than this","For my physical and mental health","Because I want to be proud of myself","For my future and dreams","Because I won't give up","Every day brings me closer to freedom"];
+
+var RESCUE_DATA=[
+{emoji:"🌟",grad:"linear-gradient(135deg,#667eea,#764ba2)",text_ar:"أنت أقوى مما تعتقد، كل لحظة ضعف هي فرصة لتثبت قوتك",text_en:"You are stronger than you think. Every moment of weakness is a chance to prove your strength",sub_ar:"تنفس بعمق... أنت بخير",sub_en:"Breathe deeply... You are okay"},
+{emoji:"💪",grad:"linear-gradient(135deg,#f093fb,#f5576c)",text_ar:"لا تستسلم الآن، لقد قطعت شوطاً طويلاً",text_en:"Don't give up now. You've come so far",sub_ar:"فكر بكل الأيام التي نجحت فيها",sub_en:"Think of all the days you succeeded"},
+{emoji:"🌈",grad:"linear-gradient(135deg,#4facfe,#00f2fe)",text_ar:"بعد كل عاصفة يأتي قوس قزح، هذه اللحظة ستمر",text_en:"After every storm comes a rainbow. This moment will pass",sub_ar:"امسك بيدك واثبت",sub_en:"Hold on tight"},
+{emoji:"🔥",grad:"linear-gradient(135deg,#fa709a,#fee140)",text_ar:"النار التي بداخلك أقوى من أي إغراء خارجي",text_en:"The fire inside you is stronger than any external temptation",sub_ar:"أنت محارب حقيقي",sub_en:"You are a true warrior"},
+{emoji:"🦁",grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",text_ar:"كن شجاعاً، الشجاعة ليست غياب الخوف بل المضي رغم وجوده",text_en:"Be brave. Courage is not the absence of fear but moving forward despite it",sub_ar:"خطوة واحدة في كل مرة",sub_en:"One step at a time"},
+{emoji:"🌺",grad:"linear-gradient(135deg,#ffecd2,#fcb69f)",text_ar:"اختر نفسك اليوم، اختر الحرية، اختر الحياة",text_en:"Choose yourself today. Choose freedom. Choose life",sub_ar:"أنت تستحق الأفضل",sub_en:"You deserve the best"},
+{emoji:"⚡",grad:"linear-gradient(135deg,#a1c4fd,#c2e9fb)",text_ar:"كل ثانية تقاوم فيها هي انتصار، احتفل بنفسك",text_en:"Every second you resist is a victory. Celebrate yourself",sub_ar:"أنت بطل",sub_en:"You are a hero"},
+{emoji:"🕊️",grad:"linear-gradient(135deg,#d4fc79,#96e6a1)",text_ar:"السلام الداخلي أجمل من أي متعة مؤقتة",text_en:"Inner peace is more beautiful than any temporary pleasure",sub_ar:"اغمض عينيك وتخيل حريتك",sub_en:"Close your eyes and imagine your freedom"},
+{emoji:"🎯",grad:"linear-gradient(135deg,#f6d365,#fda085)",text_ar:"تذكر لماذا بدأت، تذكر هدفك، تذكر حلمك",text_en:"Remember why you started. Remember your goal. Remember your dream",sub_ar:"الهدف قريب",sub_en:"The goal is close"},
+{emoji:"💎",grad:"linear-gradient(135deg,#89f7fe,#66a6ff)",text_ar:"الألم المؤقت يصنع قوة دائمة، اصبر قليلاً",text_en:"Temporary pain creates lasting strength. Be patient",sub_ar:"الألماس يتشكل تحت الضغط",sub_en:"Diamonds form under pressure"},
+{emoji:"🌙",grad:"linear-gradient(135deg,#2b5876,#4e4376)",text_ar:"حتى أحلك الليالي تنتهي بشروق جديد",text_en:"Even the darkest nights end with a new sunrise",sub_ar:"غداً يوم جديد",sub_en:"Tomorrow is a new day"},
+{emoji:"🏔️",grad:"linear-gradient(135deg,#e0c3fc,#8ec5fc)",text_ar:"كل جبل يبدأ بخطوة، وأنت بالفعل في الطريق",text_en:"Every mountain starts with a step, and you're already on the way",sub_ar:"لا تنظر للأسفل، انظر للقمة",sub_en:"Don't look down, look at the summit"},
+{emoji:"🌻",grad:"linear-gradient(135deg,#f5af19,#f12711)",text_ar:"كما تتجه الزهرة نحو الشمس، توجه نحو النور",text_en:"Like a flower turns to the sun, turn toward the light",sub_ar:"أنت تزهر كل يوم",sub_en:"You bloom every day"},
+{emoji:"🛡️",grad:"linear-gradient(135deg,#667eea,#764ba2)",text_ar:"أنت درعك الخاص، لا شيء يستطيع اختراقك إلا إذا سمحت له",text_en:"You are your own shield. Nothing can break through unless you allow it",sub_ar:"كن حصنك",sub_en:"Be your fortress"},
+{emoji:"🎨",grad:"linear-gradient(135deg,#ff9a9e,#fecfef)",text_ar:"حياتك لوحة فنية وأنت الرسام، ارسم شيئاً جميلاً اليوم",text_en:"Your life is a canvas and you're the artist. Paint something beautiful today",sub_ar:"كل يوم فرصة جديدة",sub_en:"Every day is a new opportunity"}
+];
+
+var SUG_IMAGES=[
+{grad:"linear-gradient(135deg,#667eea,#764ba2)",text_ar:"القوة تأتي من الداخل",text_en:"Strength comes from within"},
+{grad:"linear-gradient(135deg,#f093fb,#f5576c)",text_ar:"لا تستسلم أبداً",text_en:"Never give up"},
+{grad:"linear-gradient(135deg,#4facfe,#00f2fe)",text_ar:"أنت تستحق الحرية",text_en:"You deserve freedom"},
+{grad:"linear-gradient(135deg,#43e97b,#38f9d7)",text_ar:"كل يوم أنت أقوى",text_en:"Every day you grow stronger"},
+{grad:"linear-gradient(135deg,#fa709a,#fee140)",text_ar:"ثق بنفسك",text_en:"Trust yourself"},
+{grad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",text_ar:"التغيير يبدأ منك",text_en:"Change starts with you"},
+{grad:"linear-gradient(135deg,#ffecd2,#fcb69f)",text_ar:"الصبر مفتاح الفرج",text_en:"Patience is the key"},
+{grad:"linear-gradient(135deg,#d4fc79,#96e6a1)",text_ar:"اختر الحياة",text_en:"Choose life"}
+];
+
+var curProf=0,timerInt=null,rwMode='auto',pnMode='auto',rescueIdx=0,jPhotosTemp=[];
+
+function defProf(){return{name:'',addiction:'',startDate:null,description:'',whatsapp:'',journals:[],checkins:[],images:[],shownMs:[],rewards:{},punishments:{},rwMode:'auto',pnMode:'auto',chats:[],pledges:[]}}
+function loadD(){try{var d=JSON.parse(localStorage.getItem('rdata'));if(d&&d.profiles&&d.profiles.length===2){d.profiles.forEach(function(p){if(!p.rewards)p.rewards={};if(!p.punishments)p.punishments={};if(!p.images)p.images=[];if(!p.chats)p.chats=[];if(!p.pledges)p.pledges=[];if(!p.rwMode)p.rwMode='auto';if(!p.pnMode)p.pnMode='auto';if(!p.shownMs)p.shownMs=[]});return d}}catch(e){}return{profiles:[defProf(),defProf()]}}
+function saveD(d){localStorage.setItem('rdata',JSON.stringify(d))}
+function getP(){return loadD().profiles[curProf]}
+function setP(p){var d=loadD();d.profiles[curProf]=p;saveD(d)}
+
+/* ========== NAV ========== */
+function goPage(name,btn){
+document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('act');p.style.display='none'});
+var pg=document.getElementById('pg-'+name);
+pg.style.display='block';
+void pg.offsetWidth;
+pg.classList.add('act');
+document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act')});
+if(btn)btn.classList.add('act');
+if(name==='settings'){loadSettings();renderRewards();renderPunishments();renderTimeline();updateStats()}
+if(name==='journal')renderJournals();
+if(name==='gallery')renderGallery();
+if(name==='chat')renderChat();
+if(name==='home')refreshHome();
+window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ========== PROFILE ========== */
+function switchProf(i){curProf=i;document.querySelectorAll('.prof-b').forEach(function(b,j){b.classList.toggle('act',j===i)});refreshHome()}
+
+function refreshHome(){
+var p=getP(),d=loadD();
+d.profiles.forEach(function(pr,i){document.getElementById('pb'+i).textContent=pr.name||(t('person')+' '+(i+1))});
+document.getElementById('habit-name').textContent=p.addiction||t('addiction_ph');
+document.getElementById('habit-desc').textContent=p.description||t('desc_placeholder');
+document.getElementById('desc-edit').style.display='none';
+updateTimer();
+renderMs();
+renderRpDisplay();
+renderPledgeArea();
+updateStats();
+renderHomeGal();
+}
+
+/* ========== DESCRIPTION ========== */
+function editDesc(){var p=getP();document.getElementById('desc-inp').value=p.description||'';document.getElementById('habit-desc').style.display='none';document.getElementById('desc-edit').style.display='flex';document.getElementById('desc-inp').focus()}
+function saveDesc(){var p=getP();p.description=document.getElementById('desc-inp').value.trim();setP(p);refreshHome()}
+function cancelDesc(){document.getElementById('habit-desc').style.display='';document.getElementById('desc-edit').style.display='none'}
+
+/* ========== TIMER ========== */
+function updateTimer(){
+var p=getP();
+if(timerInt)clearInterval(timerInt);
+if(!p.startDate){document.getElementById('tdays').textContent='0';document.getElementById('tdetail').textContent='00:00:00';document.getElementById('tstart').textContent=t('start_not_set');setRing(0);return}
+var start=new Date(p.startDate);
+var loc=currentLang==='ar'?'ar-IQ':'en-US';
+document.getElementById('tstart').textContent=t('start_prefix')+start.toLocaleDateString(loc,{year:'numeric',month:'long',day:'numeric'});
+function tick(){
+var now=new Date(),diff=now-start;
+if(diff<0){document.getElementById('tdays').textContent='0';document.getElementById('tdetail').textContent='00:00:00';setRing(0);return}
+var days=Math.floor(diff/864e5),hrs=Math.floor((diff%864e5)/36e5),mins=Math.floor((diff%36e5)/6e4),secs=Math.floor((diff%6e4)/1e3);
+document.getElementById('tdays').textContent=days;
+document.getElementById('tdetail').textContent=pad(hrs)+':'+pad(mins)+':'+pad(secs);
+setRing(Math.min(days/90,1));
+checkMs(days);
+}
+tick();timerInt=setInterval(tick,1000);
+}
+function pad(n){return n<10?'0'+n:n}
+function setRing(pct){var c=2*Math.PI*108,off=c*(1-pct);document.getElementById('rprog').style.strokeDashoffset=off}
+
+/* ========== MILESTONES ========== */
+function renderMs(){
+var p=getP(),start=p.startDate?new Date(p.startDate):null,days=start?Math.floor((new Date()-start)/864e5):0;
+var row=document.getElementById('ms-row');
+row.innerHTML='';
+var curChip=null;
+MS.forEach(function(m,idx){
+var chip=document.createElement('div');
+chip.className='ms-chip';
+var done=days>=m,isNext=!done&&m===MS.filter(function(x){return x>days})[0];
+if(done)chip.classList.add('ach');
+else if(isNext){chip.classList.add('cur');curChip=chip}
+else chip.classList.add('fut');
+var inner='';
+if(done)inner+='<span style="margin-inline-end:3px;font-size:10px">&#10003;</span>';
+inner+=m+' '+t('day');
+if(p.rewards&&p.rewards[m])inner+='<span class="rdot"></span>';
+chip.innerHTML=inner;
+chip.onclick=(function(mm,dd){return function(){showMsd(mm,dd)}})(m,days);
+row.appendChild(chip);
+});
+setTimeout(function(){var tgt=curChip||row.lastChild;if(tgt)tgt.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'})},300);
+}
+
+function scrollMs(dir){
+var row=document.getElementById('ms-row');
+var isRtl=currentLang==='ar';
+var scrollAmt=120*(isRtl?-dir:dir);
+row.scrollBy({left:scrollAmt,behavior:'smooth'});
+}
+
+function showMsd(milestone,curDays){
+var p=getP(),quotes=currentLang==='ar'?QAR:QEN;
+var done=curDays>=milestone,isNext=!done&&milestone===MS.filter(function(x){return x>curDays})[0];
+var badge=document.getElementById('msd-badge');
+badge.className='mdl-icon '+(done?'ic-ok':isNext?'ic-cur':'ic-lock');
+badge.textContent=done?'⭐':isNext?'🔥':'🔒';
+document.getElementById('msd-title').textContent=t('ms_day',{n:milestone});
+var st=document.getElementById('msd-status');
+if(done){st.textContent=t('ms_done');st.className='ms-st st-ok'}
+else if(isNext){st.textContent=t('ms_cur');st.className='ms-st st-cur'}
+else{st.textContent=t('ms_lock');st.className='ms-st st-lock'}
+var qEl=document.getElementById('msd-quote');
+qEl.textContent=quotes[milestone]||'';
+qEl.style.display=quotes[milestone]?'':'none';
+var rwEl=document.getElementById('msd-reward');
+var rwText=getRewardText(milestone,p);
+if(rwText){rwEl.innerHTML='<strong>'+t('ms_reward_l')+'</strong> '+esc(rwText);rwEl.style.display='block'}else{rwEl.style.display='none'}
+var tmEl=document.getElementById('msd-time');
+if(!done&&p.startDate){
+var tgt=new Date(new Date(p.startDate).getTime()+milestone*864e5);
+var rem=tgt-new Date();
+if(rem>0){var rd=Math.floor(rem/864e5),rh=Math.floor((rem%864e5)/36e5);tmEl.innerHTML=t('ms_remain',{d:rd,h:rh});tmEl.style.display='block'}
+else{tmEl.style.display='none'}
+}else if(done){tmEl.innerHTML=t('ms_done_text');tmEl.style.display='block'}
+else{tmEl.style.display='none'}
+document.getElementById('msd-modal').classList.add('show');
+}
+function closeMsd(){document.getElementById('msd-modal').classList.remove('show')}
+
+function checkMs(days){
+var p=getP();
+MS.forEach(function(m){
+if(days>=m&&p.shownMs.indexOf(m)===-1){
+p.shownMs.push(m);
+setP(p);
+showAch(m);
+renderMs();
+}
+});
+}
+
+function showAch(day){
+var p=getP(),quotes=currentLang==='ar'?QAR:QEN;
+document.getElementById('ach-title').textContent=t('ach_prefix')+day+t('day_suffix');
+document.getElementById('ach-quote').textContent=quotes[day]||'';
+var rwEl=document.getElementById('ach-reward');
+var rwText=getRewardText(day,p);
+if(rwText){rwEl.textContent=rwText;rwEl.style.display='block'}else{rwEl.style.display='none'}
+document.getElementById('ach-modal').classList.add('show');
+launchConfetti();
+}
+function closeAch(){document.getElementById('ach-modal').classList.remove('show')}
+
+/* ========== REWARDS & PUNISHMENTS ========== */
+function getRewardText(day,p){
+if(p.rwMode==='custom'&&p.rewards&&p.rewards[day])return p.rewards[day];
+if(p.rwMode==='auto'||(!p.rewards||!p.rewards[day])){
+var arr=currentLang==='ar'?SUGGESTED_REWARDS_AR:SUGGESTED_REWARDS_EN;
+var idx=MS.indexOf(day);
+if(idx>=0&&idx<arr.length)return arr[idx];
+}
+return p.rewards&&p.rewards[day]?p.rewards[day]:'';
+}
+function getPunishText(day,p){
+if(p.pnMode==='custom'&&p.punishments&&p.punishments[day])return p.punishments[day];
+if(p.pnMode==='auto'||(!p.punishments||!p.punishments[day])){
+var arr=currentLang==='ar'?SUGGESTED_PUNISH_AR:SUGGESTED_PUNISH_EN;
+var seed=(day*7+curProf*3)%arr.length;
+return arr[seed];
+}
+return p.punishments&&p.punishments[day]?p.punishments[day]:'';
+}
+
+function renderRpDisplay(){
+var p=getP(),start=p.startDate?new Date(p.startDate):null,days=start?Math.floor((new Date()-start)/864e5):0;
+var html='';
+// Current achieved milestone reward
+var achieved=MS.filter(function(m){return days>=m});
+var lastAch=achieved.length>0?achieved[achieved.length-1]:null;
+if(lastAch){
+var rw=getRewardText(lastAch,p);
+if(rw)html+='<div class="rp-card reward-d"><div class="rp-label">🎁 '+t('current_reward')+' ('+t('ms_day',{n:lastAch})+')</div><div class="rp-text">'+esc(rw)+'</div></div>';
+}
+// Next milestone reward
+var nextMs=MS.filter(function(m){return m>days})[0];
+if(nextMs){
+var nrw=getRewardText(nextMs,p);
+if(nrw)html+='<div class="rp-card next-d"><div class="rp-label">🎯 '+t('next_reward')+'</div><div class="rp-text">'+t('will_get',{n:nextMs})+': '+esc(nrw)+'</div></div>';
+// Current punishment for next milestone
+var pn=getPunishText(nextMs,p);
+if(pn)html+='<div class="rp-card punish-d"><div class="rp-label">⚠️ '+t('current_punish')+' ('+t('ms_day',{n:nextMs})+')</div><div class="rp-text">'+esc(pn)+'</div></div>';
+}
+document.getElementById('rp-display').innerHTML=html;
+}
+
+/* ========== PLEDGE ========== */
+function renderPledgeArea(){
+var p=getP(),today=new Date().toDateString();
+var pledgedToday=p.pledges&&p.pledges.some(function(pl){return new Date(pl.date).toDateString()===today});
+var area=document.getElementById('pledge-area');
+if(pledgedToday){
+area.innerHTML='<div class="pledge-done"><svg viewBox="0 0 24 24" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'+t('pledge_done')+'</div>';
+}else{
+area.innerHTML='<h4>'+t('daily_pledge')+'</h4><button class="pledge-btn" onclick="openPledge()">'+t('pledge_confirm')+'</button>';
+}
+}
+function openPledge(){
+document.getElementById('pledge-reason').value='';
+var reasons=currentLang==='ar'?PLEDGE_REASONS_AR:PLEDGE_REASONS_EN;
+var html='';
+reasons.forEach(function(r){html+='<button class="sug-r" onclick="selectPledgeR(this)">'+r+'</button>'});
+document.getElementById('sug-reasons').innerHTML=html;
+document.getElementById('pledge-modal').classList.add('show');
+}
+function closePledge(){document.getElementById('pledge-modal').classList.remove('show')}
+function selectPledgeR(btn){
+document.getElementById('pledge-reason').value=btn.textContent;
+document.querySelectorAll('.sug-r').forEach(function(b){b.classList.remove('sel')});
+btn.classList.add('sel');
+}
+function confirmPledge(){
+var p=getP(),reason=document.getElementById('pledge-reason').value.trim();
+p.pledges.push({date:new Date().toISOString(),reason:reason});
+setP(p);
+closePledge();
+renderPledgeArea();
+toast(t('pledge_done'));
+}
+
+/* ========== CHECK-IN ========== */
+function doCheckin(type){
+var p=getP();
+var entry={type:type,date:new Date().toISOString(),note:''};
+if(type==='relapse'){
+var note=prompt(t('note_prompt'));
+if(note===null)return;
+entry.note=note;
+p.startDate=new Date().toISOString();
+p.shownMs=[];
+sendWA(p);
+}
+p.checkins.push(entry);
+setP(p);
+refreshHome();
+toast(type==='success'?t('ci_ok'):t('ci_bad'));
+}
+function sendWA(profile){
+var d=loadD(),oIdx=curProf===0?1:0,oP=d.profiles[oIdx];
+var phone=oP.whatsapp||profile.whatsapp;
+if(!phone){toast(t('no_wa'));return}
+var name=profile.name||(t('person')+' '+(curProf+1));
+var msg=t('relapse_msg',{name:name});
+var url='https://wa.me/'+phone.replace(/[^0-9]/g,'')+'?text='+encodeURIComponent(msg);
+window.open(url,'_blank');
+toast(t('wa_notify'));
+}
+function resetStreak(){if(!confirm(t('confirm_reset')))return;var p=getP();p.startDate=new Date().toISOString();p.shownMs=[];setP(p);refreshHome();toast(t('reset_done'))}
+
+/* ========== JOURNAL ========== */
+var jPhotosTemp=[];
+document.addEventListener('DOMContentLoaded',function(){
+var jpInp=document.getElementById('j-photos-inp');
+if(jpInp)jpInp.addEventListener('change',function(e){
+var files=e.target.files;
+for(var i=0;i<files.length&&i<3;i++){
+(function(file){
+var reader=new FileReader();
+reader.onload=function(ev){
+jPhotosTemp.push(ev.target.result);
+renderJPhotosPreview();
+};
+reader.readAsDataURL(file);
+})(files[i]);
+}
+e.target.value='';
+});
+});
+function renderJPhotosPreview(){
+var el=document.getElementById('j-photos-preview');
+el.innerHTML='';
+jPhotosTemp.forEach(function(src,i){
+var img=document.createElement('img');
+img.src=src;img.style.cssText='width:40px;height:40px;border-radius:6px;object-fit:cover';
+el.appendChild(img);
+});
+}
+
+function saveJournal(){
+var text=document.getElementById('j-inp').value.trim();
+if(!text)return;
+var p=getP(),start=p.startDate?new Date(p.startDate):new Date();
+var days=Math.floor((new Date()-start)/864e5);
+p.journals.unshift({text:text,date:new Date().toISOString(),day:days,photos:jPhotosTemp.slice()});
+setP(p);
+document.getElementById('j-inp').value='';
+jPhotosTemp=[];
+document.getElementById('j-photos-preview').innerHTML='';
+renderJournals();
+toast(t('journal_saved'));
+}
+
+function renderJournals(){
+var p=getP(),list=document.getElementById('j-list'),empty=document.getElementById('j-empty');
+if(!p.journals||p.journals.length===0){list.innerHTML='';empty.style.display='';return}
+empty.style.display='none';
+var loc=currentLang==='ar'?'ar-IQ':'en-US';
+list.innerHTML='';
+p.journals.forEach(function(j,i){
+var d=new Date(j.date);
+var div=document.createElement('div');
+div.className='jentry';
+div.style.animationDelay=(i*0.05)+'s';
+var photosHtml='';
+if(j.photos&&j.photos.length>0){
+photosHtml='<div class="jphotos">';
+j.photos.forEach(function(src){photosHtml+='<img src="'+src+'" alt="" loading="lazy">'});
+photosHtml+='</div>';
+}
+div.innerHTML='<div class="jmeta"><span>'+d.toLocaleDateString(loc,{year:'numeric',month:'short',day:'numeric'})+'</span><span>'+t('day_of',{n:j.day})+'</span></div><div class="jtext">'+esc(j.text)+'</div>'+photosHtml+'<div class="jactions"><button class="jdel" data-jdel="'+i+'">'+t('delete')+'</button></div>';
+list.appendChild(div);
+});
+list.querySelectorAll('[data-jdel]').forEach(function(btn){
+btn.addEventListener('click',function(e){
+e.stopPropagation();
+var idx=parseInt(this.getAttribute('data-jdel'));
+if(!confirm(t('del_journal')))return;
+var pp=getP();pp.journals.splice(idx,1);setP(pp);renderJournals();
+});
+});
+}
+
+/* ========== CHAT ========== */
+function renderChat(){
+var d=loadD(),p=d.profiles[curProf],oIdx=curProf===0?1:0,oP=d.profiles[oIdx];
+var today=new Date().toDateString();
+var pName=p.name||(t('person')+' '+(curProf+1));
+var oName=oP.name||(t('person')+' '+(oIdx+1));
+var start=p.startDate?new Date(p.startDate):new Date();
+var days=Math.floor((new Date()-start)/864e5);
+// Input area
+var ia=document.getElementById('chat-input-area');
+var todayChat=p.chats.filter(function(c){return new Date(c.date).toDateString()===today})[0];
+if(!todayChat){
+ia.innerHTML='<div style="font-size:13px;font-weight:600;margin-bottom:8px">'+t('how_are_you')+'</div><textarea class="fi" id="chat-ans" style="height:50px;margin-bottom:8px" placeholder="..."></textarea><button class="btn btn-p btn-s" onclick="sendChat()">'+t('send')+'</button>';
+ia.style.display='';
+}else if(!todayChat.reply&&curProf!==todayChat.fromProfile){
+ia.innerHTML='<div style="font-size:12px;color:var(--t2);margin-bottom:4px">'+oName+': '+esc(todayChat.answer)+'</div><textarea class="fi" id="chat-reply" style="height:50px;margin-bottom:8px" placeholder="'+t('reply')+'..."></textarea><button class="btn btn-p btn-s" onclick="sendReply()">'+t('reply')+'</button>';
+ia.style.display='';
+}else{ia.innerHTML='';ia.style.display='none'}
+// List
+var list=document.getElementById('chat-list'),empty=document.getElementById('chat-empty');
+var allChats=[];
+d.profiles.forEach(function(pr,pi){
+pr.chats.forEach(function(c){allChats.push({chat:c,profIdx:pi})});
+});
+allChats.sort(function(a,b){return new Date(b.chat.date)-new Date(a.chat.date)});
+if(allChats.length===0){list.innerHTML='';empty.style.display='';return}
+empty.style.display='none';
+var loc=currentLang==='ar'?'ar-IQ':'en-US';
+var html='';
+allChats.forEach(function(item){
+var c=item.chat,pi=item.profIdx;
+var cn=d.profiles[pi].name||(t('person')+' '+(pi+1));
+var co=d.profiles[pi===0?1:0].name||(t('person')+' '+(pi===0?2:1));
+var cd=new Date(c.date);
+var cstart=d.profiles[pi].startDate?new Date(d.profiles[pi].startDate):new Date();
+var cdays=Math.floor((cd-cstart)/864e5);
+html+='<div class="chat-day">';
+html+='<div class="chat-date">'+cd.toLocaleDateString(loc,{month:'short',day:'numeric'})+' — '+t('day_of',{n:cdays})+'</div>';
+html+='<div class="chat-q"><div class="chat-sender">'+cn+'</div>'+t('how_are_you')+'<br><strong>'+esc(c.answer)+'</strong></div>';
+if(c.reply)html+='<div class="chat-reply"><div class="chat-sender">'+co+'</div>'+esc(c.reply)+'</div>';
+html+='</div>';
+});
+list.innerHTML=html;
+}
+
+function sendChat(){
+var ans=document.getElementById('chat-ans');
+if(!ans||!ans.value.trim())return;
+var p=getP();
+p.chats.push({date:new Date().toISOString(),answer:ans.value.trim(),reply:'',fromProfile:curProf});
+setP(p);
+renderChat();
+}
+function sendReply(){
+var rep=document.getElementById('chat-reply');
+if(!rep||!rep.value.trim())return;
+var d=loadD(),oIdx=curProf===0?1:0;
+var today=new Date().toDateString();
+var chat=d.profiles[oIdx].chats.filter(function(c){return new Date(c.date).toDateString()===today})[0];
+if(chat){chat.reply=rep.value.trim();saveD(d);renderChat()}
+}
+
+/* ========== GALLERY ========== */
+function renderGallery(){
+renderSugImages();
+var p=getP(),grid=document.getElementById('galgrid');
+grid.innerHTML='';
+if(p.images&&p.images.length>0){
+p.images.forEach(function(img,i){
+var card=document.createElement('div');
+card.className='galcard';
+card.style.animationDelay=(i*0.06)+'s';
+card.innerHTML='<img src="'+img.src+'" alt="'+esc(img.desc)+'" loading="lazy"><div class="galdesc">'+esc(img.desc)+'</div><button class="galrm" data-galrm="'+i+'">&times;</button>';
+grid.appendChild(card);
+});
+grid.querySelectorAll('[data-galrm]').forEach(function(btn){
+btn.addEventListener('click',function(e){
+e.stopPropagation();
+var idx=parseInt(this.getAttribute('data-galrm'));
+if(!confirm(t('del_image')))return;
+var pp=getP();pp.images.splice(idx,1);setP(pp);renderGallery();renderHomeGal();
+});
+});
+}
+// Delete all btn
+if(p.images&&p.images.length>1){
+var da=document.createElement('button');
+da.className='btn btn-d btn-s';da.style.cssText='width:100%;margin-top:10px';
+da.textContent=t('delete_all');
+da.onclick=function(){if(!confirm(t('del_all_images')))return;var pp=getP();pp.images=[];setP(pp);renderGallery();renderHomeGal()};
+grid.appendChild(da);
+}
+// Add btn
+var addLabel=document.createElement('label');
+addLabel.className='galadd';
+addLabel.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>'+t('add_image')+'</span><input type="file" accept="image/*" style="display:none">';
+addLabel.querySelector('input').addEventListener('change',function(e){addImage(e)});
+grid.appendChild(addLabel);
+}
+
+function renderSugImages(){
+var el=document.getElementById('sug-imgs');
+el.innerHTML='';
+SUG_IMAGES.forEach(function(img,i){
+var card=document.createElement('div');
+card.className='gal-sug-card';
+card.style.background=img.grad;
+card.innerHTML='<span>'+(currentLang==='ar'?img.text_ar:img.text_en)+'</span>';
+card.onclick=function(){addSugImage(img)};
+el.appendChild(card);
+});
+}
+
+function addSugImage(img){
+// Create canvas to generate image from gradient
+var canvas=document.createElement('canvas');
+canvas.width=400;canvas.height=400;
+var ctx=canvas.getContext('2d');
+// Parse gradient colors
+var colors=img.grad.match(/#[0-9a-f]{6}/gi)||['#7c3aed','#a78bfa'];
+var grd=ctx.createLinearGradient(0,0,400,400);
+grd.addColorStop(0,colors[0]);grd.addColorStop(1,colors[1]||colors[0]);
+ctx.fillStyle=grd;ctx.fillRect(0,0,400,400);
+ctx.fillStyle='rgba(255,255,255,0.9)';ctx.font='bold 20px Inter, Tajawal, sans-serif';ctx.textAlign='center';
+var text=currentLang==='ar'?img.text_ar:img.text_en;
+ctx.fillText(text,200,210);
+var src=canvas.toDataURL('image/jpeg',0.8);
+var p=getP();
+p.images.push({src:src,desc:text});
+setP(p);
+renderGallery();renderHomeGal();
+toast(t('added'));
+}
+
+function addImage(e){
+var file=e.target.files[0];if(!file)return;
+var desc=prompt(t('img_desc_prompt'))||'';
+var reader=new FileReader();
+reader.onload=function(ev){var p=getP();p.images.push({src:ev.target.result,desc:desc});setP(p);renderGallery();renderHomeGal()};
+reader.readAsDataURL(file);
+e.target.value='';
+}
+
+function renderHomeGal(){
+var p=getP(),sc=document.getElementById('hgal-sc');
+sc.innerHTML='';
+if(p.images&&p.images.length>0){
+p.images.forEach(function(img,i){
+var card=document.createElement('div');
+card.className='hgal-c';
+card.innerHTML='<img src="'+img.src+'" alt="'+esc(img.desc)+'" loading="lazy">'+(img.desc?'<div class="hgd">'+esc(img.desc)+'</div>':'')+'<button class="hgrm" data-hgrm="'+i+'">&times;</button>';
+sc.appendChild(card);
+});
+sc.querySelectorAll('[data-hgrm]').forEach(function(btn){
+btn.addEventListener('click',function(e){
+e.stopPropagation();
+var idx=parseInt(this.getAttribute('data-hgrm'));
+if(!confirm(t('del_image')))return;
+var pp=getP();pp.images.splice(idx,1);setP(pp);renderHomeGal();
+});
+});
+}
+var addLabel=document.createElement('label');
+addLabel.className='hgal-add';
+addLabel.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>'+t('add_image')+'</span><input type="file" accept="image/*" style="display:none">';
+addLabel.querySelector('input').addEventListener('change',function(e){addImage(e)});
+sc.appendChild(addLabel);
+}
+
+/* ========== RESCUE ========== */
+function openRescue(){rescueIdx=0;renderRescue();document.getElementById('rescue-ov').classList.add('show')}
+function closeRescue(){document.getElementById('rescue-ov').classList.remove('show')}
+function rescueNav(dir){rescueIdx+=dir;if(rescueIdx<0)rescueIdx=RESCUE_DATA.length-1;if(rescueIdx>=RESCUE_DATA.length)rescueIdx=0;renderRescue()}
+function renderRescue(){
+var r=RESCUE_DATA[rescueIdx];
+document.getElementById('rc-bg').style.background=r.grad;
+document.getElementById('rc-emoji').textContent=r.emoji;
+document.getElementById('rc-text').textContent=currentLang==='ar'?r.text_ar:r.text_en;
+document.getElementById('rc-sub').textContent=currentLang==='ar'?r.sub_ar:r.sub_en;
+document.getElementById('rc-counter').textContent=(rescueIdx+1)+' / '+RESCUE_DATA.length;
+}
+
+/* ========== SETTINGS ========== */
+function loadSettings(){
+var p=getP();
+document.getElementById('s-name').value=p.name||'';
+document.getElementById('s-addiction').value=p.addiction||'';
+document.getElementById('s-wa').value=p.whatsapp||'';
+if(p.startDate){var d=new Date(p.startDate);document.getElementById('s-date').value=new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16)}
+else{document.getElementById('s-date').value=''}
+rwMode=p.rwMode||'auto';pnMode=p.pnMode||'auto';
+updateStats();
+}
+function saveSettings(){
+var p=getP();
+p.name=document.getElementById('s-name').value.trim();
+p.addiction=document.getElementById('s-addiction').value.trim();
+p.whatsapp=document.getElementById('s-wa').value.trim();
+var dv=document.getElementById('s-date').value;
+if(dv)p.startDate=new Date(dv).toISOString();
+p.rwMode=rwMode;p.pnMode=pnMode;
+MS.forEach(function(m){
+var ri=document.getElementById('rw-'+m);if(ri)p.rewards[m]=ri.value.trim();
+var pi=document.getElementById('pn-'+m);if(pi)p.punishments[m]=pi.value.trim();
+});
+setP(p);refreshHome();toast(t('settings_saved'));
+goPage('home',document.querySelector('.ni'));
+}
+
+function setRwMode(mode,btn){
+rwMode=mode;
+btn.parentElement.querySelectorAll('.cfg-tab').forEach(function(b){b.classList.remove('act')});
+btn.classList.add('act');
+renderRewards();
+}
+function setPnMode(mode,btn){
+pnMode=mode;
+btn.parentElement.querySelectorAll('.cfg-tab').forEach(function(b){b.classList.remove('act')});
+btn.classList.add('act');
+renderPunishments();
+}
+
+function renderRewards(){
+var p=getP(),list=document.getElementById('rw-list');
+if(rwMode==='auto'){
+var arr=currentLang==='ar'?SUGGESTED_REWARDS_AR:SUGGESTED_REWARDS_EN;
+list.innerHTML=MS.map(function(m,i){
+var sug=i<arr.length?arr[i]:'';
+return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd);font-size:12px"><span style="color:var(--pri-l);font-weight:600">'+t('ms_day',{n:m})+'</span><span style="color:var(--acc)">'+sug+'</span></div>';
+}).join('');
+}else{
+list.innerHTML=MS.map(function(m){
+var val=p.rewards&&p.rewards[m]?p.rewards[m]:'';
+return '<div class="fg" style="margin-bottom:8px"><label class="fl">'+t('reward_label',{n:m})+'</label><input type="text" class="fi" id="rw-'+m+'" value="'+esc(val)+'" placeholder="'+t('reward_ph')+'" style="font-size:12px;padding:8px"></div>';
+}).join('');
+}
+}
+function renderPunishments(){
+var p=getP(),list=document.getElementById('pn-list');
+if(pnMode==='auto'){
+var arr=currentLang==='ar'?SUGGESTED_PUNISH_AR:SUGGESTED_PUNISH_EN;
+list.innerHTML=MS.map(function(m){
+var seed=(m*7+curProf*3)%arr.length;
+return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd);font-size:12px"><span style="color:var(--pri-l);font-weight:600">'+t('ms_day',{n:m})+'</span><span style="color:var(--dan)">'+arr[seed]+'</span></div>';
+}).join('');
+}else{
+list.innerHTML=MS.map(function(m){
+var val=p.punishments&&p.punishments[m]?p.punishments[m]:'';
+return '<div class="fg" style="margin-bottom:8px"><label class="fl">'+t('punish_label',{n:m})+'</label><input type="text" class="fi" id="pn-'+m+'" value="'+esc(val)+'" placeholder="..." style="font-size:12px;padding:8px"></div>';
+}).join('');
+}
+}
+
+function updateStats(){
+var p=getP(),start=p.startDate?new Date(p.startDate):null;
+var days=start?Math.floor((new Date()-start)/864e5):0;
+document.getElementById('st-days').textContent=days;
+document.getElementById('st-ci').textContent=(p.checkins||[]).length;
+document.getElementById('st-jn').textContent=(p.journals||[]).length;
+document.getElementById('st-rl').textContent=(p.checkins||[]).filter(function(c){return c.type==='relapse'}).length;
+}
+
+function renderTimeline(){
+var p=getP(),list=document.getElementById('tl-list'),empty=document.getElementById('tl-empty');
+if(!p.checkins||p.checkins.length===0){list.innerHTML='';empty.style.display='';return}
+empty.style.display='none';
+var loc=currentLang==='ar'?'ar-IQ':'en-US';
+var sorted=p.checkins.slice().reverse();
+list.innerHTML=sorted.map(function(c,i){
+var d=new Date(c.date);
+return '<div class="tl-item" style="animation-delay:'+(i*0.05)+'s"><div class="tl-dot '+(c.type==='success'?'tl-ok':'tl-bad')+'"></div><div><div class="tl-date">'+d.toLocaleDateString(loc,{month:'short',day:'numeric'})+' — '+d.toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'})+'</div><div class="tl-text">'+(c.type==='success'?t('success_day')+' ✓':t('relapse_event'))+(c.note?' — '+esc(c.note):'')+'</div></div></div>';
+}).join('');
+}
+
+/* ========== CONFETTI ========== */
+function launchConfetti(){
+var c=document.createElement('div');c.className='confetti';document.body.appendChild(c);
+var colors=['#7c3aed','#a78bfa','#10b981','#f59e0b','#ef4444','#6366f1','#ec4899'];
+for(var i=0;i<50;i++){
+var s=document.createElement('span');
+s.style.left=Math.random()*100+'%';
+s.style.background=colors[Math.floor(Math.random()*colors.length)];
+s.style.animationDelay=(Math.random()*1.5)+'s';
+s.style.animationDuration=(2+Math.random()*2)+'s';
+s.style.width=(4+Math.random()*8)+'px';
+s.style.height=(4+Math.random()*8)+'px';
+s.style.borderRadius=Math.random()>.5?'50%':'2px';
+c.appendChild(s);
+}
+setTimeout(function(){c.remove()},4000);
+}
+
+/* ========== UTILS ========== */
+function esc(s){if(!s)return'';var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function toast(msg){
+var el=document.createElement('div');
+el.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(26,26,46,.95);color:#f1f5f9;padding:12px 20px;border-radius:16px;font-size:13px;z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);max-width:90%;text-align:center';
+el.textContent=msg;document.body.appendChild(el);
+setTimeout(function(){el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(function(){el.remove()},300)},3000);
+}
+
+/* ========== INIT ========== */
+document.addEventListener('DOMContentLoaded',function(){
+applyLang();
+refreshHome();
+// Modal backdrop clicks
+document.getElementById('ach-modal').addEventListener('click',function(e){if(e.target===this)closeAch()});
+document.getElementById('msd-modal').addEventListener('click',function(e){if(e.target===this)closeMsd()});
+document.getElementById('pledge-modal').addEventListener('click',function(e){if(e.target===this)closePledge()});
+document.getElementById('rescue-ov').addEventListener('click',function(e){if(e.target===this)closeRescue()});
+// Ripple on checkin btns
+document.querySelectorAll('.ci-btn').forEach(function(btn){
+btn.addEventListener('click',function(e){
+var rect=this.getBoundingClientRect();
+var rpl=document.createElement('span');rpl.className='rpl';
+var sz=Math.max(rect.width,rect.height);
+rpl.style.width=rpl.style.height=sz+'px';
+rpl.style.left=(e.clientX-rect.left-sz/2)+'px';
+rpl.style.top=(e.clientY-rect.top-sz/2)+'px';
+this.appendChild(rpl);
+setTimeout(function(){rpl.remove()},600);
+});
+});
+// Rescue keyboard nav
+document.addEventListener('keydown',function(e){
+if(document.getElementById('rescue-ov').classList.contains('show')){
+if(e.key==='ArrowLeft')rescueNav(-1);
+if(e.key==='ArrowRight')rescueNav(1);
+if(e.key==='Escape')closeRescue();
+}
+});
+});
+
+// PWA
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){})}
+</script>
+</body>
+</html>
